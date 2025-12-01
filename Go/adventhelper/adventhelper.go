@@ -64,6 +64,7 @@ func ReadIntFile(fname string) (nums []int, err error) {
 }
 
 // combine groups of lines separate by empty lines
+// combine groups of lines separate by empty lines
 func ParseLineGroups(fname string, sep string) (strs []string, err error) {
 	b, err := os.ReadFile(fname)
 	if err != nil {
@@ -83,6 +84,10 @@ func ParseLineGroups(fname string, sep string) (strs []string, err error) {
 			strs = append(strs, temp)
 			temp = ""
 		}
+	}
+
+	if len(temp) > 0 {
+		strs = append(strs, temp)
 	}
 	return strs, nil
 }
