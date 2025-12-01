@@ -234,6 +234,19 @@ func Sign(i int) int {
 	return 1
 }
 
+// Integer division always rounds down
+func FloorDiv(a, b int) int {
+	if b == 0 {
+		panic("Division by Zero!")
+	}
+
+	if a%b != 0 && a*b < 0 {
+		return a/b - 1
+	}
+
+	return a / b
+}
+
 // Sets the bit at pos in the integer n.
 func SetBit(n int, pos uint) int {
 	n |= (1 << pos)

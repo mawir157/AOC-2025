@@ -21,30 +21,26 @@ func parseInput(ss []string) []int {
 			moves = append(moves, -1*nn)
 
 		}
-
 	}
-
 	return moves
 }
 
-func combination(ms []int) (int, int) {
+func combination(pos, vals int, ms []int) (int, int) {
 	score1, score2 := 0, 0
-	pos := 50
 	for _, m := range ms {
-		step := 1
-		if m < 0 {
-			step = -1
-		}
-
-		for c := 0; c != m; c += step {
-			pos += step
-			if pos%100 == 0 {
-				score2++
-			}
-		}
-		if pos%100 == 0 {
+		s, e := pos, pos+m
+		if e%vals == 0 {
 			score1++
 		}
+		if s < e {
+			e = AH.FloorDiv(e, vals)
+			s = AH.FloorDiv(s, vals)
+		} else {
+			e = AH.FloorDiv(e-1, vals)
+			s = AH.FloorDiv(s-1, vals)
+		}
+		score2 += AH.AbsInt(e - s)
+		pos = pos + m
 	}
 	return score1, score2
 }
@@ -52,7 +48,7 @@ func combination(ms []int) (int, int) {
 func Run() {
 	inputLines, _ := AH.ReadStrFile("../inputs/day01.txt")
 	moves := parseInput(inputLines)
-	p1, p2 := combination(moves)
+	p1, p2 := combination(50, 100, moves)
 
 	AH.PrintSoln(1, p1, p2)
 
