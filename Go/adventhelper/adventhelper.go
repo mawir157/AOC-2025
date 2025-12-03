@@ -118,7 +118,7 @@ func MaxAndMin(arr []int) (max int, min int) {
 	return
 }
 
-// returns the index of the maximum and minimum of an array of ints
+// returns the first index of the maximum and minimum of an array of ints
 func MaxAndMinIdx(arr []int) (maxIdx int, minIdx int) {
 	max, min := arr[0], arr[0]
 	maxIdx, minIdx = 0, 0
@@ -132,6 +132,18 @@ func MaxAndMinIdx(arr []int) (maxIdx int, minIdx int) {
 		if i < min {
 			min = i
 			minIdx = idx
+		}
+	}
+	return
+}
+
+func MaxAndMaxIdx(arr []int) (maxVal int, maxIdx int) {
+	maxVal, maxIdx = arr[0], 0
+
+	for i, v := range arr {
+		if v > maxVal {
+			maxVal = v
+			maxIdx = i
 		}
 	}
 	return

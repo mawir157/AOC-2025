@@ -1,5 +1,5 @@
 # Ignore input files
-/input/*
+/inputs/*
 # Ignore vscode files
 /.vscode/*
 # Haskell build files

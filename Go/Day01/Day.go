@@ -19,7 +19,6 @@ func parseInput(ss []string) []int {
 			moves = append(moves, nn)
 		} else {
 			moves = append(moves, -1*nn)
-
 		}
 	}
 	return moves
@@ -40,7 +39,7 @@ func combination(pos, vals int, ms []int) (int, int) {
 			s = AH.FloorDiv(s-1, vals)
 		}
 		score2 += AH.AbsInt(e - s)
-		pos = pos + m
+		pos += m
 	}
 	return score1, score2
 }
