@@ -75,7 +75,9 @@ func Run() {
 	ps := parseInput(is[0])
 	p1, p2 := 0, 0
 	for _, p := range ps {
-		P1, P2 += countInvalid(p)
+		v1, v2 := countInvalid(p)
+		p1 += v1
+		p2 += v2
 	}
 
 	AH.PrintSoln(2, p1, p2)
