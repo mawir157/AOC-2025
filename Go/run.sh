@@ -17,7 +17,7 @@ then
 	fi
 else
 	missing=""
-	for i in $(seq -f "%02g" 1 25)
+	for i in $(seq -f "%02g" 1 12)
 	do
 		if test -f Day$i/Day.go;
 		then
