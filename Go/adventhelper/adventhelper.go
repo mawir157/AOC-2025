@@ -24,9 +24,9 @@ func ReadStrFile(fname string) (strs []string, err error) {
 	}
 
 	lines := strings.Split(string(b), "\n")
-	for _, l := range lines {
+	for i, l := range lines {
 		// Empty line occurs at the end of the file when we use Split.
-		if len(l) == 0 {
+		if i == len(lines)-1 && len(l) == 0 {
 			continue
 		}
 		strs = append(strs, l)
