@@ -73,8 +73,6 @@ func checkIngredients(rs []Interval, ns []int) (int, int) {
 	}
 
 	return allGood, total
-
-	// return total
 }
 
 func Run() {
