@@ -36,25 +36,17 @@ func beamSplitter(start int, ss [][]int) (int, int) {
 	beam[start] = 1
 
 	for _, row := range ss {
-		postSplit := make(map[int]int)
-
 		for b := range beam {
-			hasSplit := false
 			for _, splitter := range row {
 				if b == splitter {
 					splits++
-					postSplit[b-1] += beam[b]
-					postSplit[b+1] += beam[b]
-					hasSplit = true
+					beam[b-1] += beam[b]
+					beam[b+1] += beam[b]
+					delete(beam, b)
 					break
 				}
 			}
-			if !hasSplit {
-				postSplit[b] += beam[b]
-			}
 		}
-
-		beam = postSplit
 	}
 
 	timeLines := 0
