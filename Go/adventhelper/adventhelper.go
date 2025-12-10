@@ -271,6 +271,18 @@ func ClearBit(n int, pos uint) int {
 	return n
 }
 
+// Counts the number of 1 bits in an int
+func CountBits(n int) int {
+	bitCount := 0
+	for n > 0 {
+		if n&1 == 1 {
+			bitCount++
+		}
+		n /= 2
+	}
+	return bitCount
+}
+
 // returns integer array of all values from max to min inclusie
 func MakeRange(min, max int) []int {
 	a := make([]int, max-min+1)
