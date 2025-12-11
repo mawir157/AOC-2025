@@ -1,5 +1,4 @@
 //go:build d02
-// +build d02
 
 package Day02
 
@@ -7,6 +6,7 @@ import (
 	AH "AoC2025/adventhelper"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Pair struct {
@@ -50,6 +50,7 @@ func countInvalid(p Pair) (int, int) {
 			mask := AH.PowInt(10, d/reps)
 			is_rep_unit := true
 			rep_block := ii % mask
+			ii /= mask
 			for ii > 0 {
 				if ii%mask != rep_block {
 					is_rep_unit = false
@@ -71,6 +72,7 @@ func countInvalid(p Pair) (int, int) {
 }
 
 func Run() {
+	defer AH.TrackTime(time.Now(), "Day 2")
 	is, _ := AH.ReadStrFile("../inputs/day02.txt")
 	ps := parseInput(is[0])
 	p1, p2 := 0, 0

@@ -5,7 +5,8 @@ else
   day=-1
 fi
 
-BUILDTAGS=()
+BUILDTAGS=("time")
+# BUILDTAGS=()
 
 if [ $day -gt 0 ]
 then

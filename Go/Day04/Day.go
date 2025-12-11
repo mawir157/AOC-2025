@@ -1,10 +1,10 @@
 //go:build d04
-// +build d04
 
 package Day04
 
 import (
 	AH "AoC2025/adventhelper"
+	"time"
 )
 
 type Pos struct {
@@ -77,6 +77,7 @@ func clearWarehouse(m map[Pos]int) int {
 }
 
 func Run() {
+	defer AH.TrackTime(time.Now(), "Day 4")
 	is, _ := AH.ReadStrFile("../inputs/day04.txt")
 	wh := parseInput(is)
 	countNbrs(wh)

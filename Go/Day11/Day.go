@@ -5,6 +5,7 @@ package Day11
 import (
 	AH "AoC2025/adventhelper"
 	"strings"
+	"time"
 )
 
 type Adj [][]int
@@ -119,7 +120,7 @@ func part2(adj Adj, ls Labels, from, to string) int {
 }
 
 func Run() {
-	// defer AH.TrackTime(time.Now(), "Day 11")
+	defer AH.TrackTime(time.Now(), "Day 11")
 	is, _ := AH.ReadStrFile("../inputs/day11.txt")
 	adj, lbls := buildGraph(is)
 	p1 := routesDown(adj, lbls, "you", "out")

@@ -4,6 +4,7 @@ package Day07
 
 import (
 	AH "AoC2025/adventhelper"
+	"time"
 )
 
 func parseInput(ss []string) (int, [][]int) {
@@ -58,6 +59,7 @@ func beamSplitter(start int, ss [][]int) (int, int) {
 }
 
 func Run() {
+	defer AH.TrackTime(time.Now(), "Day 7")
 	is, _ := AH.ReadStrFile("../inputs/day07.txt")
 	start, rs := parseInput(is)
 

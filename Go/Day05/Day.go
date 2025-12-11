@@ -1,5 +1,4 @@
 //go:build d05
-// +build d05
 
 package Day05
 
@@ -8,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Interval struct {
@@ -76,6 +76,7 @@ func checkIngredients(rs []Interval, ns []int) (int, int) {
 }
 
 func Run() {
+	defer AH.TrackTime(time.Now(), "Day 5")
 	is, _ := AH.ReadStrFile("../inputs/day05.txt")
 	rs, ns := parseInput(is)
 

@@ -1,10 +1,10 @@
 //go:build d01
-// +build d01
 
 package Day01
 
 import (
 	"strconv"
+	"time"
 
 	AH "AoC2025/adventhelper"
 )
@@ -45,6 +45,7 @@ func combination(pos, vals int, ms []int) (int, int) {
 }
 
 func Run() {
+	defer AH.TrackTime(time.Now(), "Day 1")
 	inputLines, _ := AH.ReadStrFile("../inputs/day01.txt")
 	moves := parseInput(inputLines)
 	p1, p2 := combination(50, 100, moves)

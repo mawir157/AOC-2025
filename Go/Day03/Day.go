@@ -1,11 +1,11 @@
 //go:build d03
-// +build d03
 
 package Day03
 
 import (
 	AH "AoC2025/adventhelper"
 	"strconv"
+	"time"
 )
 
 func largestJoltage(s string, l int) int {
@@ -30,6 +30,7 @@ func largestJoltage(s string, l int) int {
 }
 
 func Run() {
+	defer AH.TrackTime(time.Now(), "Day 3")
 	is, _ := AH.ReadStrFile("../inputs/day03.txt")
 	p1, p2 := 0, 0
 	for _, p := range is {

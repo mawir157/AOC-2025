@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Pos struct {
@@ -28,19 +29,22 @@ func parseInput(ss []string) []Pos {
 }
 
 func buildGraph(ps []Pos, cons int) [][]bool {
-
 	adj := make([][]bool, len(ps))
 	for i := range ps {
 		adj[i] = make([]bool, len(ps))
 	}
+
 	pIdx, qIdx := -1, -1
 	for i := 0; i < cons; i++ {
 		dist := 1000000000000000
-		for iq, q := range ps {
-			for ip, p := range ps {
-				if iq >= ip || adj[iq][ip] {
+		for iq := 0; iq < len(ps); iq++ {
+			q := ps[iq]
+			for ip := iq + 1; ip < len(ps); ip++ {
+				p := ps[ip]
+				if adj[iq][ip] {
 					continue
 				}
+
 				distSqrd := (p.x-q.x)*(p.x-q.x) + (p.y-q.y)*(p.y-q.y) + (p.z-q.z)*(p.z-q.z)
 				if distSqrd < dist {
 					pIdx = ip
@@ -137,6 +141,7 @@ func mostIsolatedVertex(ps []Pos) int {
 }
 
 func Run() {
+	defer AH.TrackTime(time.Now(), "Day 8")
 	is, _ := AH.ReadStrFile("../inputs/day08.txt")
 	ps := parseInput(is)
 	adj := buildGraph(ps, 1000)

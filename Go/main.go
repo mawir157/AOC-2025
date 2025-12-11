@@ -13,9 +13,12 @@ import (
 	D10 "AoC2025/Day10"
 	D11 "AoC2025/Day11"
 	D12 "AoC2025/Day12"
+	AH "AoC2025/adventhelper"
+	"time"
 )
 
 func main() {
+	defer AH.TrackTime(time.Now(), "All days")
 	D01.Run()
 	D02.Run()
 	D03.Run()

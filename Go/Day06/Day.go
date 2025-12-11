@@ -6,6 +6,7 @@ import (
 	AH "AoC2025/adventhelper"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func parseInput(ss []string) ([][]int, string) {
@@ -72,7 +73,6 @@ func doCephalopodMaths(ss []string) int {
 
 		if col == cols-1 {
 			bigSum += colValue
-			newSum = true
 		}
 	}
 
@@ -102,6 +102,7 @@ func doMaths(grid [][]int, ops string) int {
 }
 
 func Run() {
+	defer AH.TrackTime(time.Now(), "Day 6")
 	is, _ := AH.ReadStrFile("../inputs/day06.txt")
 	grid, ops := parseInput(is)
 
