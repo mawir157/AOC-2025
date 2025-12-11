@@ -122,9 +122,7 @@ func Run() {
 	// defer AH.TrackTime(time.Now(), "Day 11")
 	is, _ := AH.ReadStrFile("../inputs/day11.txt")
 	adj, lbls := buildGraph(is)
-	routeMemo = make(map[Pair]int)
 	p1 := routesDown(adj, lbls, "you", "out")
-	routeMemo = make(map[Pair]int)
 	p2 := part2(adj, lbls, "svr", "out")
 
 	AH.PrintSoln(11, p1, p2)
