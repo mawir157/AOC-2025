@@ -41,22 +41,28 @@ func parseInput(ss []string) ([]Pos, []Edge) {
 	return ps, es
 }
 
-func maxRect(ps []Pos) int {
-	maxRect := 0
+func maxRect(ps []Pos, es []Edge) (int, int) {
+	maxRect1, maxRect2 := 0, 0
 	for iq := 0; iq < len(ps); iq++ {
 		q := ps[iq]
 		for ip := iq + 1; ip < len(ps); ip++ {
 			p := ps[ip]
 
-			area := AH.AbsInt(q.x-p.x+1) * AH.AbsInt(q.y-p.y+1)
+			area := (AH.AbsInt(q.x-p.x) + 1) * (AH.AbsInt(q.y-p.y) + 1)
 
-			if area > maxRect {
-				maxRect = area
+			if area > maxRect1 {
+				maxRect1 = area
+			}
+
+			if area > maxRect2 {
+				if goodRect(p, q, es) {
+					maxRect2 = area
+				}
 			}
 		}
 	}
 
-	return maxRect
+	return maxRect1, maxRect2
 }
 
 func goodRect(v1, v2 Pos, es []Edge) bool {
@@ -99,34 +105,11 @@ func goodRect(v1, v2 Pos, es []Edge) bool {
 	return good
 }
 
-func maxRect2(ps []Pos, es []Edge) int {
-	maxRect := 0
-
-	for iq := 0; iq < len(ps); iq++ {
-		q := ps[iq]
-		for ip := iq + 1; ip < len(ps); ip++ {
-			p := ps[ip]
-
-			if !goodRect(p, q, es) {
-				continue
-			}
-
-			area := (AH.AbsInt(q.x-p.x) + 1) * (AH.AbsInt(q.y-p.y) + 1)
-
-			if area > maxRect {
-				maxRect = area
-			}
-		}
-	}
-
-	return maxRect
-}
-
 func Run() {
 	defer AH.TrackTime(time.Now(), "Day 9")
 	is, _ := AH.ReadStrFile("../inputs/day09.txt")
 	ps, es := parseInput(is)
-	p1, p2 := maxRect(ps), maxRect2(ps, es)
+	p1, p2 := maxRect(ps, es)
 
 	AH.PrintSoln(9, p1, p2)
 
