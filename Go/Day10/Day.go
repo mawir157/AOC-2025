@@ -107,6 +107,14 @@ func sortMoves(ms [][]int) [][]int {
 	return reorderedMoves
 }
 
+func moveSize(arr []int) int {
+	sum := 0
+	for _, v := range arr {
+		sum += v
+	}
+	return sum
+}
+
 func parseInput2(s string) ([]int, [][]int) {
 	ss := strings.Split(s, " ")
 	n := len(ss[0]) - 2
@@ -191,13 +199,30 @@ func wtf(target []int, moves [][]int, presses int, mIdx int) int {
 	// unhittable jolts - we only have a subset of moves remaining.
 	// If there are non-zero jolts that can no longer be hit this run is doomed
 	unhit := make([]int, len(target))
+	smallestMove := 100
 	for idx := mIdx; idx < len(moves); idx++ {
 		unhit = applyMove(unhit, moves[idx])
+		smallestMove = AH.Min(smallestMove, len(moves[idx]))
 	}
+
 	for i, v := range unhit {
 		if v == 0 && target[i] != 0 {
 			return 1000000
 		}
+	}
+
+	// remaining jolts
+	totalJolt := 0
+	largestJolt := 0
+	for _, v := range target {
+		totalJolt += v
+		largestJolt = AH.Max(largestJolt, v)
+	}
+	if (bestFound-presses)*smallestMove < totalJolt {
+		return 1000000
+	}
+	if (bestFound - presses) < largestJolt {
+		return 1000000
 	}
 
 	for idx := mIdx; idx < len(moves); idx++ {
