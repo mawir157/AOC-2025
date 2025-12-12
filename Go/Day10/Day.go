@@ -4,14 +4,14 @@ package Day10
 
 import (
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	AH "AoC2025/adventhelper"
 )
 
-func parseInput(s string) (int, []int, []int) {
+func parseInput(s string) (int, []int) {
 	ss := strings.Split(s, " ")
 	target := 0
 	t := AH.ReverseString(ss[0][1 : len(ss[0])-1])
@@ -36,23 +36,111 @@ func parseInput(s string) (int, []int, []int) {
 		}
 		moves = append(moves, move)
 	}
-	sort.Slice(moves, func(i, j int) bool {
-		return AH.CountBits(moves[i]) > AH.CountBits(moves[j])
-	})
+
+	return target, moves
+}
+
+func sortMoves(ms [][]int) [][]int {
+	done := make([]bool, len(ms))
+	toDo := len(ms)
+
+	lengths := []int{}
+	for _, m := range ms {
+		l := 0
+		for _, v := range m {
+			l += v
+		}
+		lengths = append(lengths, l)
+	}
+
+	reorderedMoves := [][]int{}
+
+	for toDo > 0 {
+		target := make([]int, len(ms[0]))
+		// find the joltage that appears in the fewest moves
+		for i, m := range ms {
+			if !done[i] {
+				target = applyMove(target, m)
+			}
+		}
+		// the joltage that fewest buttons affect and not already used
+		_, aa := AH.MaxAndMin(target)
+		mm := 0
+		for idx, v := range target {
+			if v == 0 {
+				continue
+			}
+			if v >= aa {
+				aa = v
+				mm = idx
+			}
+		}
+
+		// find a long move that affects button mm
+		long := -1
+		best := -1
+		for i, m := range ms {
+			if m[mm] != 0 && !done[i] {
+				l := lengths[i]
+				if l > long {
+					long = l
+					best = i
+				}
+			}
+		}
+
+		reorderedMoves = append(reorderedMoves, ms[best])
+		done[best] = true
+		toDo--
+
+		if toDo == 1 {
+			for i, b := range done {
+				if !b {
+					reorderedMoves = append(reorderedMoves, ms[i])
+					break
+				}
+			}
+			break
+		}
+	}
+
+	return reorderedMoves
+}
+
+func parseInput2(s string) ([]int, [][]int) {
+	ss := strings.Split(s, " ")
+	n := len(ss[0]) - 2
+
+	moves := [][]int{}
+	for i, s := range ss {
+		if i == 0 || i == len(ss)-1 {
+			continue
+		}
+		move := make([]int, n)
+		t := s[1 : len(s)-1]
+		ns := strings.Split(t, ",")
+		for _, n := range ns {
+			v, _ := strconv.Atoi(n)
+			move[v] = 1
+		}
+		moves = append(moves, move)
+	}
+
+	moves = sortMoves(moves)
 
 	joltage := []int{}
-	t = ss[len(ss)-1][1 : len(ss[len(ss)-1])-1]
+	t := ss[len(ss)-1][1 : len(ss[len(ss)-1])-1]
 	ns := strings.Split(t, ",")
 	for _, n := range ns {
 		v, _ := strconv.Atoi(n)
 		joltage = append(joltage, v)
 	}
 
-	return target, moves, joltage
+	return joltage, moves
 }
 
 func groupTheoryInnit(t int, ms []int) int {
-	// moves commute and are involutions, so the maximum possible sequence of
+	// moves commute are involutions, so the maximum possible sequence of
 	// is len(ms) and every subsequence can be encoded w/ a binary number
 	bestCountBits := 1000
 	for bin := 0; bin < (1 << len(ms)); bin++ {
@@ -74,135 +162,76 @@ func groupTheoryInnit(t int, ms []int) int {
 	return bestCountBits
 }
 
-func applyMove(js []int, m int) []int {
+func applyMove(js []int, m []int) []int {
 	js_copy := make([]int, len(js))
 	for i, v := range js {
-		js_copy[i] = v
-	}
-	for i := 0; m > 0; i++ {
-		if m&1 == 1 {
-			js_copy[i] = js[i] - 1
-		}
-		m /= 2
+		js_copy[i] = v - m[i]
 	}
 
 	return js_copy
 }
 
-var bestFound = 100000
+var bestFound = 0
 
-func wtf(target []int, ms []int, presses int, mIdx int, st string) int {
-	// again the moves commute and increment by one - so the move sequence can
-	// be written as e.g. 00111222..nnn. Apply move 0 some number of times, then
-	// move 1, moves 2 and so on.
-	// Since the moves all increment the max number of moves is sum(joltage)
-	// <hash|moves>
-	if presses > 1000 {
-		return 1000000
-		panic("wtf")
+func wtf(target []int, moves [][]int, presses int, mIdx int) int {
+	hi, _ := AH.MaxAndMin(target)
+
+	if hi == 0 {
+		fmt.Println("FOUND A MATCH AT LENGTH", presses)
+		bestFound = presses
+		return bestFound
 	}
 
-	// fmt.Println(presses, mIdx, target, st)
-
-	if presses > bestFound || mIdx >= len(ms) {
-		hi, lo := AH.MaxAndMin(target)
-		if lo == 0 && hi == 0 {
-			fmt.Println("FOUND A MATCH AT LENGTH", presses, st)
-			if presses < bestFound {
-				bestFound = presses
-			}
-			return bestFound
-		}
-		// fmt.Println("========================================")
+	if presses > bestFound || mIdx >= len(moves) {
 		return 1000000
 	}
 
 	bestCount := 1000000
-	newTarget := target
-	m := ms[mIdx]
 
-	// how many times can we apply m?
-	iMax := 0
-	for iMax = 0; ; iMax++ {
-		newTarget = applyMove(newTarget, m)
-		bad := false
-		for _, v := range newTarget {
-			if v < 0 {
-				bad = true
-			}
-		}
-		if bad {
-			break
+	// unhittable jolts - we only have a subset of moves remaining.
+	// If there are non-zero jolts that can no longer be hit this run is doomed
+	unhit := make([]int, len(target))
+	for idx := mIdx; idx < len(moves); idx++ {
+		unhit = applyMove(unhit, moves[idx])
+	}
+	for i, v := range unhit {
+		if v == 0 && target[i] != 0 {
+			return 1000000
 		}
 	}
-	// fmt.Println("Can apply", m, iMax, "times")
-	newTarget = target
 
-	for im := 0; im <= iMax; im++ {
-		// fmt.Println("applying move", m, im, "times")
-		// fmt.Println(target, "->", newTarget)
-		k := wtf(newTarget, ms, presses+im, mIdx+1, st)
+	for idx := mIdx; idx < len(moves); idx++ {
+		m := moves[idx]
+		newTarget := applyMove(target, m)
+		_, lo := AH.MaxAndMin(newTarget)
+		if lo < 0 || presses+1 >= bestFound {
+			continue
+		}
+		k := wtf(newTarget, moves, presses+1, idx)
 
 		if k < bestCount {
 			bestCount = k
 		}
-
-		st += strconv.Itoa(m)
-		st += ","
-
-		newTarget = applyMove(newTarget, m)
-
-		mxm, _ := AH.MaxAndMinIdx(newTarget)
-		if presses+mxm+im >= bestFound {
-			continue
-		}
 	}
 
-	// for im, m := range ms {
-	// 	if im < mIdx {
-	// 		continue
-	// 	}
-	// 	newTarget := applyMove(target, m)
-	// 	bad := false
-	// 	maxTarget := 0
-	// 	for _, v := range newTarget {
-	// 		if v < 0 {
-	// 			bad = true
-	// 		}
-	// 		if v > maxTarget {
-	// 			maxTarget = v
-	// 		}
-	// 	}
-	// 	if bad || presses+maxTarget >= bestFound {
-	// 		continue
-	// 	} else {
-	// 		k := wtf(newTarget, ms, presses+1, im, memo)
-
-	// 		if k < bestCount {
-	// 			bestCount = k
-	// 		}
-	// 	}
-	// }
-
-	// fmt.Println("returning", bestFound)
 	return bestCount
 }
 
 func Run() {
-	// defer AH.TrackTime(time.Now(), "Day 10")
+	defer AH.TrackTime(time.Now(), "Day 10")
 	is, _ := AH.ReadStrFile("../inputs/day10.txt")
 	p1, p2 := 0, 0
 	for i, s := range is {
-		if i != 0 {
-			continue
-		}
-		target, moves, joltage := parseInput(s)
+		fmt.Println(i, "/", len(s))
+		target, moves := parseInput(s)
 		p1 += groupTheoryInnit(target, moves)
-		fmt.Println("(", i, "/", len(is), ")", joltage)
-		bestFound = 100000
-		p2 += wtf(joltage, moves, 0, 0, "")
-		fmt.Println(moves)
-		// break
+		joltage, moves2 := parseInput2(s)
+		fmt.Println(moves2)
+		bestFound = 0
+		for _, v := range joltage {
+			bestFound += v
+		}
+		p2 += wtf(joltage, moves2, 0, 0)
 	}
 	AH.PrintSoln(10, p1, p2)
 
