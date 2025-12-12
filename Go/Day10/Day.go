@@ -3,7 +3,6 @@
 package Day10
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -185,7 +184,6 @@ func wtf(target []int, moves [][]int, presses int, mIdx int) int {
 	hi, _ := AH.MaxAndMin(target)
 
 	if hi == 0 {
-		fmt.Println("FOUND A MATCH AT LENGTH", presses)
 		bestFound = presses
 		return bestFound
 	}
@@ -247,11 +245,9 @@ func Run() {
 	is, _ := AH.ReadStrFile("../inputs/day10.txt")
 	p1, p2 := 0, 0
 	for i, s := range is {
-		fmt.Println(i, "/", len(s))
 		target, moves := parseInput(s)
 		p1 += groupTheoryInnit(target, moves)
 		joltage, moves2 := parseInput2(s)
-		fmt.Println(moves2)
 		bestFound = 0
 		for _, v := range joltage {
 			bestFound += v
