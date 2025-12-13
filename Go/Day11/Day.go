@@ -11,7 +11,7 @@ import (
 type Adj [][]int
 type Labels map[string]int
 type Pair struct {
-	l, r string
+	l, r int
 }
 
 var routeMemo = make(map[Pair]int)
@@ -57,7 +57,7 @@ func buildGraph(ss []string) (Adj, Labels) {
 	return adj, map_labels
 }
 
-func routesDown(adj Adj, ls Labels, from, to string) int {
+func routes(adj Adj, ls Labels, from, to int) int {
 
 	if v, ok := routeMemo[Pair{from, to}]; ok {
 		return v
@@ -70,36 +70,28 @@ func routesDown(adj Adj, ls Labels, from, to string) int {
 	paths := 0
 
 	// find children of 'from'
-	fromIdx := ls[from]
+	// fromIdx := ls[from]
 	children := []int{}
 	for i := 0; i < len(ls); i++ {
-		if adj[fromIdx][i] == 1 {
+		if adj[from][i] == 1 {
 			children = append(children, i)
 		}
 	}
 
 	for _, p := range children {
-		childStr := ""
-		for k, v := range ls {
-			if v == p {
-				childStr = k
-			}
-		}
-		if len(childStr) == 0 {
-			panic("CAN'T FIND PARENT")
-		}
-
-		paths += routesDown(adj, ls, childStr, to)
+		paths += routes(adj, ls, p, to)
 	}
 
 	routeMemo[Pair{from, to}] = paths
 	return paths
 }
 
-func part2(adj Adj, ls Labels, from, to string) int {
+func part2(adj Adj, ls Labels, from, to int) int {
 	rts := 1
-	fft2dac := routesDown(adj, ls, "fft", "dac")
-	dac2fft := routesDown(adj, ls, "dac", "fft")
+	ffti := ls["fft"]
+	daci := ls["dac"]
+	fft2dac := routes(adj, ls, ffti, daci)
+	dac2fft := routes(adj, ls, daci, ffti)
 
 	// one of these must be zero
 	if fft2dac*dac2fft != 0 {
@@ -107,13 +99,13 @@ func part2(adj Adj, ls Labels, from, to string) int {
 	}
 
 	if fft2dac != 0 { // from -> fft -> dac -> to
-		rts *= routesDown(adj, ls, from, "fft")
+		rts *= routes(adj, ls, from, ffti)
 		rts *= fft2dac
-		rts *= routesDown(adj, ls, "dac", to)
+		rts *= routes(adj, ls, daci, to)
 	} else { // from -> dac -> fft -> to
-		rts *= routesDown(adj, ls, from, "dac")
+		rts *= routes(adj, ls, from, daci)
 		rts *= dac2fft
-		rts *= routesDown(adj, ls, "fft", to)
+		rts *= routes(adj, ls, ffti, to)
 	}
 
 	return rts
@@ -123,8 +115,8 @@ func Run() {
 	defer AH.TrackTime(time.Now(), "Day 11")
 	is, _ := AH.ReadStrFile("../inputs/day11.txt")
 	adj, lbls := buildGraph(is)
-	p1 := routesDown(adj, lbls, "you", "out")
-	p2 := part2(adj, lbls, "svr", "out")
+	p1 := routes(adj, lbls, lbls["you"], lbls["out"])
+	p2 := part2(adj, lbls, lbls["svr"], lbls["out"])
 
 	AH.PrintSoln(11, p1, p2)
 
