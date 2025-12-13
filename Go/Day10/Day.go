@@ -244,7 +244,7 @@ func Run() {
 	defer AH.TrackTime(time.Now(), "Day 10")
 	is, _ := AH.ReadStrFile("../inputs/day10.txt")
 	p1, p2 := 0, 0
-	for i, s := range is {
+	for _, s := range is {
 		target, moves := parseInput(s)
 		p1 += groupTheoryInnit(target, moves)
 		joltage, moves2 := parseInput2(s)
