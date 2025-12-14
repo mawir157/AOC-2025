@@ -4,7 +4,6 @@ package Day10
 
 import (
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +17,8 @@ type Joltage []int
 type Hash struct {
 	q1, q2, q3 int
 }
+
+var INFINITY = 1000000
 
 var memo = make(map[Hash]int)
 
@@ -75,9 +76,9 @@ func parseInput2(s string) (Joltage, Joltage, []Move) {
 		moves = append(moves, move)
 	}
 
-	sort.Slice(moves, func(i, j int) bool {
-		return moveSize(moves[i]) > moveSize(moves[j])
-	})
+	// sort.Slice(moves, func(i, j int) bool {
+	// 	return moveSize(moves[i]) > moveSize(moves[j])
+	// })
 
 	joltage2 := Joltage{}
 	t = ss[len(ss)-1][1 : len(ss[len(ss)-1])-1]
@@ -130,6 +131,33 @@ func binMap(moves []Move) map[int]Move {
 		}
 		bm[bin] = move
 	}
+	// purge redundant combos i.e two sequences of moves lead to the same
+	tokill := []int{}
+	for bin1, mv1 := range bm {
+		for bin2, mv2 := range bm {
+			if bin1 >= bin2 {
+				continue
+			}
+			bad := true
+			for i := range mv2 {
+				if mv1[i] != mv2[i] {
+					bad = false
+					break
+				}
+			}
+			if bad {
+				if AH.CountBits(bin1) < AH.CountBits(bin2) {
+					tokill = append(tokill, bin2)
+				} else if AH.CountBits(bin2) < AH.CountBits(bin1) {
+					tokill = append(tokill, bin1)
+				}
+			}
+		}
+	}
+	for _, kill := range tokill {
+		delete(bm, kill)
+	}
+
 	return bm
 }
 
@@ -139,12 +167,12 @@ func groupTheory(joltage Joltage, mm map[int]Move, part2 bool) []int {
 	validSequences := []int{}
 	for bin, mv := range mm {
 		jtg := applyMove(joltage, mv, part2)
+		hi, lo := AH.MaxAndMin(jtg)
 		if part2 {
-			if allEven(jtg) {
+			if allEven(jtg) && hi >= 0 && lo >= 0 {
 				validSequences = append(validSequences, bin)
 			}
 		} else {
-			hi, lo := AH.MaxAndMin(jtg)
 			if hi == 0 && lo == 0 {
 				validSequences = append(validSequences, bin)
 			}
@@ -154,7 +182,7 @@ func groupTheory(joltage Joltage, mm map[int]Move, part2 bool) []int {
 }
 
 func part1(joltage Joltage, mm map[int]Move) int {
-	val := 1000000
+	val := INFINITY
 	vs := groupTheory(joltage, mm, false)
 	for _, v := range vs {
 		vv := AH.CountBits(v)
@@ -166,62 +194,84 @@ func part1(joltage Joltage, mm map[int]Move) int {
 	return val
 }
 
-func wtf2(joltage Joltage, mm map[int]Move) int {
-	// fmt.Println(joltage)
-	collide, debug := false, 0
+func formatDebugArr(debugArr []int) {
+	m := [24]int{}
+	total := 0
+	for _, n := range debugArr {
+		for i := 0; n > 0; i++ {
+			if n&1 == 1 {
+				m[i]++
+				total++
+			}
+			n /= 2
+		}
+	}
+	fmt.Println(m, total)
+	return
+}
+
+func wtf2(joltage Joltage, mm map[int]Move, first bool) int {
 	hash := hashJoltage(joltage)
 	if v, ok := memo[hash]; ok {
-		collide, debug = true, v
 		return v
 	}
 
-	hi, _ := AH.MaxAndMin(joltage)
+	hi, lo := AH.MaxAndMin(joltage)
 
-	if hi == 0 {
+	if hi == 0 && lo == 0 {
 		return 0
 	}
 
+	// only relevant if joltage is initially all even
+	evenInit := first && allEven(joltage)
+
 	possibleMoves := groupTheory(joltage, mm, true)
-	// fmt.Println(possibleMoves)
-	if len(possibleMoves) == 0 {
-		memo[hash] = 1000000
-		return 1000000
+	if evenInit {
+		possibleMoves = []int{}
+		for k, _ := range mm {
+			possibleMoves = append(possibleMoves, k)
+		}
 	}
 
-	best := 1000000
+	if len(possibleMoves) == 0 {
+		memo[hash] = INFINITY
+		return INFINITY
+	}
+
+	best := INFINITY
+
 	for _, m := range possibleMoves {
 		jtg := make([]int, len(joltage))
 		for i := range joltage {
 			jtg[i] = joltage[i]
 		}
-		// fmt.Println(jtg, joltage, m, mm[m])
 		jtg = applyMove(jtg, mm[m], true)
-		// fmt.Println(jtg)
 		count := AH.CountBits(m)
-		// at this point next Joltage is all even
-		for i := range jtg {
-			jtg[i] /= 2
+		if evenInit {
+			jtg = applyMove(jtg, mm[m], true)
+			count += AH.CountBits(m)
 		}
-		// fmt.Println(count, jtg)
-
-		_, lo := AH.MaxAndMin(jtg)
+		// at this point next Joltage is all even
+		hi, lo := AH.MaxAndMin(jtg)
 		if lo < 0 {
 			continue
 		}
-		// break
-		t := count + 2*wtf2(jtg, mm)
+
+		if !allEven(jtg) {
+			panic("not recovering from here")
+		}
+		multiplier := 1
+		for allEven(jtg) && hi > 0 {
+			for i := range jtg {
+				jtg[i] /= 2
+			}
+			multiplier *= 2
+			break
+		}
+
+		t := count + multiplier*wtf2(jtg, mm, false)
 		if best > t {
 			best = t
-			// if presses == 0 {
-			// 	fmt.Println("new best", best)
-			// }
-		}
-	}
-
-	if collide {
-		if debug != best {
-			fmt.Println(debug, best, joltage)
-			panic("eff")
 		}
 	}
 
@@ -233,15 +283,12 @@ func Run() {
 	defer AH.TrackTime(time.Now(), "Day 10")
 	is, _ := AH.ReadStrFile("../inputs/day10.txt")
 	p1, p2 := 0, 0
-	for i, s := range is {
+	for _, s := range is {
 		j1, j2, moves := parseInput2(s)
 		bm := binMap(moves)
 		p1 += part1(j1, bm)
-		// fmt.Println(j2, moves)
 		memo = make(map[Hash]int)
-		v := wtf2(j2, bm)
-		p2 += v
-		fmt.Println(i, p2, v)
+		p2 += wtf2(j2, bm, true)
 	}
 	AH.PrintSoln(10, p1, p2)
 
