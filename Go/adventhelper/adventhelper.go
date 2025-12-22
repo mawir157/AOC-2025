@@ -260,6 +260,12 @@ func FloorDiv(a, b int) int {
 }
 
 // Sets the bit at pos in the integer n.
+func GetBit(n int, pos int) bool {
+	n &= (1 << pos)
+	return n != 0
+}
+
+// Sets the bit at pos in the integer n.
 func SetBit(n int, pos uint) int {
 	n |= (1 << pos)
 	return n

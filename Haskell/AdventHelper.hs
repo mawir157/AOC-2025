@@ -5,9 +5,19 @@ import Data.List.Split (splitOn)
 splitOnAnyOf :: Eq a => [[a]] -> [a] -> [[a]]
 splitOnAnyOf ds xs = foldl' (\ys d -> ys >>= splitOn d) [xs] ds
 
+allEqual :: Eq a => [a] -> Bool
+allEqual xs = all (== head xs) (tail xs)
+
+digitCount :: Int -> Int
+digitCount 0 = 0
+digitCount n = 1 + digitCount (n `div` 10)
+
 if' :: Bool -> a -> a -> a
 if' True  x _ = x
 if' False _ y = y
+
+thd :: (a,b,c) -> c
+thd (_,_,c) = c
 
 zipWithFn :: (a -> b) -> [a] -> [(a,b)]
 zipWithFn fn as  = zip as (map fn as)
