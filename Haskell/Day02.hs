@@ -1,4 +1,3 @@
-
 import Data.List.Split (splitOn)
 import AdventHelper ( allEqual, printSoln, digitCount )
 
