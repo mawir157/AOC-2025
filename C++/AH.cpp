@@ -26,7 +26,7 @@ namespace AH
 	}
 
 	std::vector<std::string> ParseLineGroups(const std::vector<std::string>& ss,
-	                                         const char sep)
+											 const char sep)
 	{
 		std::vector<std::string> lineGroups;
 
@@ -92,6 +92,25 @@ namespace AH
 		return elems;
 	}
 
+	std::vector<std::string> Fields(const std::string & s)
+	{
+		std::vector<std::string> ss;
+		std::string scopy(s);
+
+		size_t pos = 0;
+		while ((pos = scopy.find(" ")) != std::string::npos) {
+			ss.emplace_back(scopy.substr(0, pos));
+			pos = scopy.find_first_not_of(" ", pos);
+			scopy.erase(0, pos);
+		}
+		
+		if (scopy.length() > 0) {
+			ss.push_back(scopy);
+		}
+
+		return ss;
+	}	
+
 	std::string trim(const std::string & str)
 	{
 		size_t first = str.find_first_not_of(' ');
@@ -147,11 +166,11 @@ namespace AH
 	{
 		switch (unit)
 		{
-		case NAN:
+		case NANO:
 			std::cout << "Time taken = " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << "[ns]" << std::endl;
 			break;
 		case MIC:
-			std::cout << "Time taken = " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << "[µs]" << std::endl;
+			std::cout << "Time taken = " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << "[us]" << std::endl;
 			break;
 		case MIL:
 			std::cout << "Time taken = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "[ms]" << std::endl;
@@ -163,7 +182,7 @@ namespace AH
 		default:
 	 		auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 			if (ns < 10'000) {
-				printTime(NAN);
+				printTime(NANO);
 			} else if (ns < 10'000'000) {
 				printTime(MIC);
 			} else if (ns < 10'000'000'000) {

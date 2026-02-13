@@ -15,7 +15,7 @@ then
 	if test -f Day$day.cpp;
 	then
 		echo "compiling single day..."
-		g++ *.cpp -O2 -o aoc2025 -std=c++17 -DDAY$day -Wall -Wextra -Wunused-variable
+		g++ *.cpp -O2 -o aoc2025 -std=c++20 -DDAY$day -Wall -Wextra -Wunused-variable
 		echo "done."
 		./aoc2025
 		rm -rf aoc2025
@@ -25,7 +25,7 @@ then
 else
 	missing=""
 	COMPILERSTRING=" "
-	for i in $(seq -f "%02g" 1 25)
+	for i in $(seq -f "%02g" 1 12)
 	do
 		if test -f Day$i.cpp;
 		then
@@ -39,7 +39,7 @@ else
 			fi
 		fi
 	done
-	g++ *.cpp -O2 -o aoc2025 -std=c++17 $COMPILERSTRING
+	g++ *.cpp -O2 -o aoc2025 -std=c++20 $COMPILERSTRING
 	./aoc2025
 	rm -rf aoc2025
 	if [ "$missing" != "" ]

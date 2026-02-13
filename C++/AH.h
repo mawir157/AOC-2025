@@ -11,14 +11,17 @@ namespace AH
 	template<typename T, typename W>
 	void PrintSoln(const int day, const T soln1, const W soln2)
 	{
-		std::cout << "Day "       << day   << std::endl;
+		std::cout << "Day "	   << day   << std::endl;
 		std::cout << "  Part 1: " << soln1 << std::endl;
 		std::cout << "  Part 2: " << soln2 << std::endl;
 
 		return;
 	}
 
-	enum TIME_UNIT { SEC, MIL, MIC, NAN, NON };
+	template<class T>
+	using Grid = std::vector<std::vector<T>>;
+
+	enum TIME_UNIT { SEC, MIL, MIC, NANO, NON };
 	void printTime(const TIME_UNIT unit = TIME_UNIT::NON);
 
 	inline std::chrono::steady_clock::time_point start;
@@ -27,10 +30,11 @@ namespace AH
 	void PrintSolnFinal(const int day, const uint64_t soln1);
 	std::vector<std::string> ReadTextFile(const std::string& filename);
 	std::vector<std::string> ParseLineGroups(const std::vector<std::string>& ss,
-		                                       const char sep=' ');
+											 const char sep=' ');
 	std::vector<std::string> Split(const std::string &s, char delim);
 	std::vector<std::string> SplitOnString(const std::string &s,
-		                                     const std::string delim);
+										   const std::string delim);
+	std::vector<std::string> Fields(const std::string & s);
 
 	std::string trim(const std::string & str);
 	// string-to-int64 conversion
