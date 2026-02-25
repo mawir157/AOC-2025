@@ -37,20 +37,22 @@ namespace Day07
 	{
 		uint64_t splits = 0;
 		std::map<uint64_t, uint64_t> beam;
+		std::map<uint64_t, uint64_t> beam_new;
 		beam[s] = 1;
-
 		for (auto r : g) {
+			beam_new = beam;
 			for (auto [b,_] : beam) {
 				for (auto sp : r) {
 					if (b == sp) {
 						splits++;
-						beam[b-1] += beam[b];
-						beam[b+1] += beam[b];
-						beam.erase(b);
+						beam_new[b-1] += beam[b];
+						beam_new[b+1] += beam[b];
+						beam_new.erase(b);
 						break;
 					}
 				}
 			}
+			beam = beam_new;
 		}
 
 		uint64_t timelines = 0;
