@@ -20,7 +20,7 @@ doNormalMaths (s1,s2,s3,s4,c:sym) = calc c [n1,n2,n3,n4] + doNormalMaths (s1',s2
 doCephalopodMaths :: ([Int], Char) -> (String, String, String, String, String) -> Int
 doCephalopodMaths (ns,sym) ([],_,_,_,_) = calc sym ns
 doCephalopodMaths (ns,sym) (x:xs,y:ys,z:zs,w:ws,c:cs)
-    | null ns= doCephalopodMaths ([n], c) (xs,ys,zs,ws, cs)
+    | null ns = doCephalopodMaths ([n], c) (xs,ys,zs,ws, cs)
     | null nn = calc sym ns + doCephalopodMaths ([], 'X') (xs,ys,zs,ws, cs)
     | otherwise = doCephalopodMaths (n:ns, sym) (xs,ys,zs,ws, cs)
     where nn = filter (/= ' ') [x,y,z,w]
