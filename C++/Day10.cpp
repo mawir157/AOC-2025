@@ -6,6 +6,12 @@ namespace Day10
 {
 
     typedef std::vector<int64_t> Move;
+
+    struct PreMove {
+        Move delta;
+        int64_t parity;
+    };
+
     typedef std::vector<int64_t> Joltage;
 
     struct Hash
@@ -21,16 +27,7 @@ namespace Day10
     int64_t INF = 1000000;
     
     std::map<Hash, int64_t> g_memo;
-
-    int64_t moveSize(const Move & m)
-    {
-        int64_t sum = 0;
-        for (auto v : m) {
-            sum += v;
-        }
-
-        return sum;
-    }
+    std::map<Hash, std::set<int64_t>> g_parity_memo;
 
     Hash hashJoltage(const Joltage & js)
     {
@@ -50,6 +47,27 @@ namespace Day10
         }
 
         return Hash{q1, q2, q3};
+    }
+
+    struct ScanResults
+    {
+        int64_t hi;
+        int64_t lo;
+        bool even;
+    };
+
+    ScanResults scan(const Joltage& j)
+    {
+        ScanResults s{INT64_MIN,INT64_MAX,true};
+
+        for(auto x : j)
+        {
+            s.hi = std::max(s.hi,x);
+            s.lo = std::min(s.lo,x);
+            s.even &= !(x&1);
+        }
+
+        return s;
     }
 
     std::tuple<Joltage, Joltage, std::vector<Move>>
@@ -89,18 +107,15 @@ namespace Day10
         return {jolt1, jolt2, moves};
     }
 
-    Joltage applyMove(const Joltage & js, const Move & move, const bool part2)
+    void applyMove(Joltage & js, const Move & move, const bool part2)
     {
-        auto js_copy = js;
         for (size_t i = 0; i < js.size(); i++) {
-            if (part2) {
-                js_copy[i] = js[i] - move[i];
-            } else {
-                js_copy[i] = (js[i] + move[i]) % 2;
+            js[i] -= move[i];
+            if (!part2) {
+                js[i] %= 2;
             }
         }
-
-        return js_copy;
+        return;
     }
 
     bool allEven(const Joltage & js) {
@@ -115,74 +130,45 @@ namespace Day10
 
     int64_t countBits(int64_t n)
     {
-        int64_t bit_count = 0;
-        while (n > 0) {
-            if (n & 1) {
-                bit_count++;
-            }
-            n /= 2;
-        }
-
-        return bit_count;
+        return std::popcount((uint64_t)n);
     }
 
-    std::map<int64_t, Move> binMap(const std::vector<Move> & moves)
+    std::vector<PreMove> binMap(const std::vector<Move> & moves)
     {
-        std::map<int64_t, Move> bm;
+        std::vector<PreMove> bm(1 << moves.size());
         for (int64_t bin = 0; bin < (1 << moves.size()); bin++) {
             auto bbin = bin;
             Move move(moves[0].size());
             for (size_t idx = 0; bbin > 0; idx++) {
                 if (bbin & 1) {
                     auto mv = moves[idx];
-                    move = applyMove(move, mv, true);
+                    applyMove(move, mv, true);
                 }
-                bbin /= 2;
+                bbin >>= 1;
             }
             for (size_t idx = 0; idx < move.size(); idx++) {
                 move[idx] *= -1;
             }
-            bm[bin] = move;
-        }
-        std::vector<int> to_kill;
-        for (size_t bin1 = 0; bin1 < bm.size(); bin1++) {
-            auto mv1 = bm[bin1];
-            for (size_t bin2 = 0; bin2 < bm.size(); bin2++) {
-                if (bin1 >= bin2) {
-                    continue;
-                }
-                auto mv2 = bm[bin2];
-                bool bad = true;
-                for (size_t idx = 0; idx < mv2.size(); idx++) {
-                    if (mv1[idx] != mv2[idx]) {
-                        bad = false;
-                        break;
-                    }
-                }
-                if (bad) {
-                    if (countBits(bin1) < countBits(bin2)) {
-                        to_kill.push_back(bin2);
-                    } else if (countBits(bin2) < countBits(bin1)) {
-                        to_kill.push_back(bin1);
-                    }                  
-                }
-            }
-        }
-        for (auto k : to_kill) {
-            bm.erase(k);
+            PreMove pm = {move, countBits(bin)};
+            bm[bin] = std::move(pm);
         }
 
         return bm;
     }
 
     std::set<int64_t>
-    parity(const Joltage & js, const std::map<int64_t, Move> bm, const bool part2)
+    parity(const Joltage & js, const std::vector<PreMove> & bm, const bool part2)
     {
+        auto hash = hashJoltage(js);
+        if (g_parity_memo.count(hash) > 0) {
+            return g_parity_memo[hash];
+        }
+        
         std::set<int64_t> valid_sequences;
-        for (auto [bin, mv] : bm) {
-            auto jtg = applyMove(js, mv, part2);
-            auto hi = *std::max_element(jtg.begin(), jtg.end());
-            auto lo = *std::min_element(jtg.begin(), jtg.end());
+        for (int64_t bin = 0; bin < (int64_t)bm.size(); bin++) {
+            Joltage jtg = js;
+            applyMove(jtg, bm[bin].delta, part2);
+            auto [hi, lo, _] = scan(jtg);
             if (part2) {
                 if ((allEven(jtg)) && (hi >= 0) && (lo >= 0)) {
                     valid_sequences.insert(bin);
@@ -194,10 +180,11 @@ namespace Day10
             }
         }
 
+        g_parity_memo[hash] = valid_sequences;
         return valid_sequences;
     }
 
-    int64_t part1(const Joltage & js, const std::map<int64_t, Move> bm)
+    int64_t part1(const Joltage & js, const std::vector<PreMove> & bm)
     {
         int64_t val = INF;
         
@@ -212,25 +199,24 @@ namespace Day10
         return val;
     }
 
-    int64_t part2(const Joltage & joltage, const std::map<int64_t, Move> bm, const bool first)
+    int64_t part2(const Joltage & joltage, const std::vector<PreMove> & bm, const bool first)
     {
         auto hash = hashJoltage(joltage);
         if (g_memo.count(hash) > 0) {
             return g_memo[hash];
         }
 
-        auto hi = *std::max_element(joltage.begin(), joltage.end());
-        auto lo = *std::min_element(joltage.begin(), joltage.end());
+        auto [hi, lo, even] = scan(joltage);
 
     	if (hi == 0 && lo == 0) {
 		    return 0;
 	    }
 
-        auto even_init = first && allEven(joltage);
+        auto even_init = first && even;
         auto legal_moves = parity(joltage, bm, true);
         if (even_init) {
-            for (auto [k, _] : bm) {
-                legal_moves.insert(k);
+            for (int64_t bin = 0; bin < (int64_t)bm.size(); bin++) {
+                legal_moves.insert(bin);
             }
         }
 
@@ -241,18 +227,17 @@ namespace Day10
         }
 
         for (auto im : legal_moves) {
-            Joltage jtg(joltage.begin(), joltage.end());
-            jtg = applyMove(jtg, bm.at(im), true);
-            auto count = countBits(im);
+            Joltage jtg = joltage;
+            applyMove(jtg, bm.at(im).delta, true);
+            auto count = bm.at(im).parity;
             if (even_init) {
-                jtg = applyMove(jtg, bm.at(im), true);
-                count += countBits(im);
+                applyMove(jtg, bm.at(im).delta, true);
+                count += bm.at(im).parity;
             }
             // at this point next Joltage is all even
-            auto hi = *std::max_element(jtg.begin(), jtg.end());
-            auto lo = *std::min_element(jtg.begin(), jtg.end());
+            auto [hhi, llo, _] = scan(jtg);
 
-            if (lo < 0) {
+            if (llo < 0) {
                 continue;
             }
 
@@ -283,6 +268,7 @@ namespace Day10
             auto bm = binMap(moves);
             p1 += part1(j1, bm);
             g_memo.clear();
+            g_parity_memo.clear();
             p2 += part2(j2, bm, true);
         }
 
