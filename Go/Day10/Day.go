@@ -131,32 +131,6 @@ func binMap(moves []Move) map[int]Move {
 		}
 		bm[bin] = move
 	}
-	// purge redundant combos i.e two sequences of moves lead to the same
-	tokill := []int{}
-	for bin1, mv1 := range bm {
-		for bin2, mv2 := range bm {
-			if bin1 >= bin2 {
-				continue
-			}
-			bad := true
-			for i := range mv2 {
-				if mv1[i] != mv2[i] {
-					bad = false
-					break
-				}
-			}
-			if bad {
-				if AH.CountBits(bin1) < AH.CountBits(bin2) {
-					tokill = append(tokill, bin2)
-				} else if AH.CountBits(bin2) < AH.CountBits(bin1) {
-					tokill = append(tokill, bin1)
-				}
-			}
-		}
-	}
-	for _, kill := range tokill {
-		delete(bm, kill)
-	}
 
 	return bm
 }
@@ -210,7 +184,7 @@ func formatDebugArr(debugArr []int) {
 	return
 }
 
-func wtf2(joltage Joltage, mm map[int]Move, first bool) int {
+func wtf2(joltage Joltage, mm map[int]Move) int {
 	hash := hashJoltage(joltage)
 	if v, ok := memo[hash]; ok {
 		return v
@@ -222,16 +196,7 @@ func wtf2(joltage Joltage, mm map[int]Move, first bool) int {
 		return 0
 	}
 
-	// only relevant if joltage is initially all even
-	evenInit := first && allEven(joltage)
-
 	possibleMoves := groupTheory(joltage, mm, true)
-	if evenInit {
-		possibleMoves = []int{}
-		for k, _ := range mm {
-			possibleMoves = append(possibleMoves, k)
-		}
-	}
 
 	if len(possibleMoves) == 0 {
 		memo[hash] = INFINITY
@@ -247,10 +212,7 @@ func wtf2(joltage Joltage, mm map[int]Move, first bool) int {
 		}
 		jtg = applyMove(jtg, mm[m], true)
 		count := AH.CountBits(m)
-		if evenInit {
-			jtg = applyMove(jtg, mm[m], true)
-			count += AH.CountBits(m)
-		}
+
 		// at this point next Joltage is all even
 		hi, lo := AH.MaxAndMin(jtg)
 		if lo < 0 {
@@ -269,7 +231,7 @@ func wtf2(joltage Joltage, mm map[int]Move, first bool) int {
 			break
 		}
 
-		t := count + multiplier*wtf2(jtg, mm, false)
+		t := count + multiplier*wtf2(jtg, mm)
 		if best > t {
 			best = t
 		}
@@ -288,7 +250,7 @@ func Run() {
 		bm := binMap(moves)
 		p1 += part1(j1, bm)
 		memo = make(map[Hash]int)
-		p2 += wtf2(j2, bm, true)
+		p2 += wtf2(j2, bm)
 	}
 	AH.PrintSoln(10, p1, p2)
 

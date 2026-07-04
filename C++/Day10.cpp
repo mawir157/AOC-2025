@@ -27,7 +27,7 @@ namespace Day10
     int64_t INF = 1000000;
     
     std::map<Hash, int64_t> g_memo;
-    std::map<Hash, std::set<int64_t>> g_parity_memo;
+    std::map<Hash, std::vector<int64_t>> g_parity_memo;
 
     Hash hashJoltage(const Joltage & js)
     {
@@ -156,7 +156,7 @@ namespace Day10
         return bm;
     }
 
-    std::set<int64_t>
+    std::vector<int64_t>
     parity(const Joltage & js, const std::vector<PreMove> & bm, const bool part2)
     {
         auto hash = hashJoltage(js);
@@ -164,18 +164,18 @@ namespace Day10
             return g_parity_memo[hash];
         }
         
-        std::set<int64_t> valid_sequences;
+        std::vector<int64_t> valid_sequences;
         for (int64_t bin = 0; bin < (int64_t)bm.size(); bin++) {
             Joltage jtg = js;
             applyMove(jtg, bm[bin].delta, part2);
             auto [hi, lo, _] = scan(jtg);
             if (part2) {
                 if ((allEven(jtg)) && (hi >= 0) && (lo >= 0)) {
-                    valid_sequences.insert(bin);
+                    valid_sequences.emplace_back(bin);
                 }
             } else {
                 if ((hi == 0) && (lo == 0)) {
-                    valid_sequences.insert(bin);
+                    valid_sequences.emplace_back(bin);
                 }
             }
         }
@@ -199,7 +199,7 @@ namespace Day10
         return val;
     }
 
-    int64_t part2(const Joltage & joltage, const std::vector<PreMove> & bm, const bool first)
+    int64_t part2(const Joltage & joltage, const std::vector<PreMove> & bm)
     {
         auto hash = hashJoltage(joltage);
         if (g_memo.count(hash) > 0) {
@@ -212,13 +212,7 @@ namespace Day10
 		    return 0;
 	    }
 
-        auto even_init = first && even;
         auto legal_moves = parity(joltage, bm, true);
-        if (even_init) {
-            for (int64_t bin = 0; bin < (int64_t)bm.size(); bin++) {
-                legal_moves.insert(bin);
-            }
-        }
 
         auto best = INF;
         if (legal_moves.size() == 0) {
@@ -230,10 +224,6 @@ namespace Day10
             Joltage jtg = joltage;
             applyMove(jtg, bm.at(im).delta, true);
             auto count = bm.at(im).parity;
-            if (even_init) {
-                applyMove(jtg, bm.at(im).delta, true);
-                count += bm.at(im).parity;
-            }
             // at this point next Joltage is all even
             auto [hhi, llo, _] = scan(jtg);
 
@@ -249,7 +239,7 @@ namespace Day10
                 multiplier *= 2;
                 break;
             }
-            auto t = count + multiplier*part2(jtg, bm, false);
+            auto t = count + multiplier*part2(jtg, bm);
             if (best > t) {
                 best = t;
             }
@@ -266,10 +256,10 @@ namespace Day10
         for (auto s : ss) {
             auto [j1, j2, moves] = parseInput(s);
             auto bm = binMap(moves);
+            g_parity_memo.clear();
             p1 += part1(j1, bm);
             g_memo.clear();
-            g_parity_memo.clear();
-            p2 += part2(j2, bm, true);
+            p2 += part2(j2, bm);
         }
 
 		AH::PrintSoln(10, p1, p2);
