@@ -192,7 +192,39 @@ namespace AH
 			}
 			break;
 		}
-		
+		total_time += (end - start);
 		end = start;
+	}
+
+	void printTotalTime(const TIME_UNIT unit)
+	{
+		switch (unit)
+		{
+		case NANO:
+			std::cout << "Time taken = " << std::chrono::duration_cast<std::chrono::nanoseconds>(total_time).count() << "[ns]" << std::endl;
+			break;
+		case MIC:
+			std::cout << "Time taken = " << std::chrono::duration_cast<std::chrono::microseconds>(total_time).count() << "[us]" << std::endl;
+			break;
+		case MIL:
+			std::cout << "Time taken = " << std::chrono::duration_cast<std::chrono::milliseconds>(total_time).count() << "[ms]" << std::endl;
+			break;
+		case SEC:
+			std::cout << "Total time taken = " << std::chrono::duration_cast<std::chrono::seconds>(total_time).count() << "[s]" << std::endl;
+			break;
+		case NON:
+		default:
+	 		auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(total_time).count();
+			if (ns < 10'000) {
+				printTotalTime(NANO);
+			} else if (ns < 10'000'000) {
+				printTotalTime(MIC);
+			} else if (ns < 10'000'000'000) {
+				printTotalTime(MIL);
+			}  else {
+				printTotalTime(SEC);
+			}
+			break;
+		}
 	}
 }

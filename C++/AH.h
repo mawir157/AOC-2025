@@ -23,9 +23,11 @@ namespace AH
 
 	enum TIME_UNIT { SEC, MIL, MIC, NANO, NON };
 	void printTime(const TIME_UNIT unit = TIME_UNIT::NON);
+	void printTotalTime(const TIME_UNIT unit = TIME_UNIT::NON);
 
 	inline std::chrono::steady_clock::time_point start;
 	inline std::chrono::steady_clock::time_point end;
+	inline std::chrono::nanoseconds total_time(0);
 
 	void PrintSolnFinal(const int day, const uint64_t soln1);
 	std::vector<std::string> ReadTextFile(const std::string& filename);

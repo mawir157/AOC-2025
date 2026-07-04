@@ -5,7 +5,7 @@
 
 int main()
 {
-
+	
 	#ifdef DAY01
 		#ifdef TIME
 		AH::start = std::chrono::steady_clock::now();
@@ -136,6 +136,10 @@ int main()
 		AH::end = std::chrono::steady_clock::now();
 		AH::printTime();
 		#endif
+	#endif
+
+	#ifdef TIME
+	AH::printTotalTime();
 	#endif
 	
 	return 0;
